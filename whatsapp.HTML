@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp Group Chat</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #e9edf0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* Header */
+    #chat-header {
+      background: #075e54;
+      color: #fff;
+      padding: 15px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    /* Chat Container */
+    #chat-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message {
+      max-width: 70%;
+      padding: 10px;
+      margin: 5px 10px;
+      border-radius: 15px;
+      word-wrap: break-word;
+      position: relative;
+      cursor: pointer;
+      border: 1px solid #ccc;
+    }
+
+    .sender {
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .sent {
+      align-self: flex-end;
+      background: #dcf8c6;
+      color: #000;
+    }
+
+    .received.amaar {
+      align-self: flex-start;
+      background: #add8e6;
+      color: #000;
+    }
+
+    .received.inaya {
+      align-self: flex-start;
+      background: #ffd580;
+      color: #000;
+    }
+
+    .received.vanika {
+      align-self: flex-start;
+      background: #ffb6c1;
+      color: #000;
+    }
+
+    /* Hover Options */
+    .message:hover .options {
+      display: flex;
+    }
+
+    .options {
+      display: none;
+      position: absolute;
+      top: 0;
+      right: -150px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      padding: 5px;
+      z-index: 10;
+      flex-direction: column;
+      min-width: 120px;
+    }
+
+    .option {
+      padding: 8px;
+      cursor: pointer;
+      text-align: center;
+      font-size: 14px;
+      color: #075e54;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .option:last-child {
+      border-bottom: none;
+    }
+
+    .option:hover {
+      background: #f0f0f0;
+    }
+
+    /* Input Box */
+    #message-box {
+      display: flex;
+      background: #f0f0f0;
+      padding: 10px;
+    }
+
+    #message-input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+
+    #send-btn {
+      padding: 10px 20px;
+      background: #25d366;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #send-btn:hover {
+      background: #20c056;
+    }
+  </style>
+</head>
+<body>
+  <div id="chat-header">WhatsApp Group Chat</div>
+  <div id="chat-container"></div>
+  <div id="message-box">
+    <input type="text" id="message-input" placeholder="Type a message...">
+    <button id="send-btn">Send</button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBkRMAV35xlf2i0vCYpXtXX-CNLN5d14qU",
+      authDomain: "talk-91c2b.firebaseapp.com",
+      projectId: "talk-91c2b",
+      storageBucket: "talk-91c2b.appspot.com",
+      messagingSenderId: "686511139626",
+      appId: "1:686511139626:web:de6631fc351dcf7335cc53"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const chatContainer = document.getElementById("chat-container");
+    const messageInput = document.getElementById("message-input");
+    const sendBtn = document.getElementById("send-btn");
+
+    // Simulated logged-in user
+    const user = localStorage.getItem("user") || "Unknown";
+
+    // Reference to Firestore collection
+    const messagesRef = collection(db, "messages");
+
+    // Real-time listener
+    const q = query(messagesRef, orderBy("timestamp", "asc"));
+    onSnapshot(q, (snapshot) => {
+      chatContainer.innerHTML = "";
+      snapshot.forEach((doc) => {
+        const message = doc.data();
+        const messageElement = document.createElement("div");
+        messageElement.classList.add("message");
+        messageElement.setAttribute("data-id", doc.id);
+
+        const userClasses = {
+          Amaar: "amaar",
+          Inaya: "inaya",
+          Vanika: "vanika",
+        };
+
+        if (message.sender === user) {
+          messageElement.classList.add("sent");
+        } else {
+          messageElement.classList.add("received", userClasses[message.sender]);
+        }
+
+        messageElement.innerHTML = `
+          <div class="sender">${message.sender}</div>
+          <div>${message.text}</div>
+          <div class="options">
+            <div class="option edit">Edit</div>
+            <div class="option delete">Delete</div>
+            <div class="option react">React</div>
+          </div>
+        `;
+        chatContainer.appendChild(messageElement);
+      });
+
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      // Add event listeners to options
+      document.querySelectorAll(".edit").forEach((editBtn) => {
+        editBtn.addEventListener("click", handleEdit);
+      });
+
+      document.querySelectorAll(".delete").forEach((deleteBtn) => {
+        deleteBtn.addEventListener("click", handleDelete);
+      });
+    });
+
+    // Send message
+    sendBtn.addEventListener("click", async () => {
+      const text = messageInput.value.trim();
+      if (text) {
+        await addDoc(messagesRef, {
+          sender: user,
+          text,
+          timestamp: serverTimestamp(),
+        });
+        messageInput.value = "";
+      }
+    });
+
+    // Handle delete
+    async function handleDelete(event) {
+      const messageId = event.target.closest(".message").dataset.id;
+      await deleteDoc(doc(db, "messages", messageId));
+    }
+
+    // Handle edit
+    async function handleEdit(event) {
+      const messageElement = event.target.closest(".message");
+      const messageId = messageElement.dataset.id;
+      const newText = prompt("Edit your message:", messageElement.querySelector("div:nth-child(2)").textContent);
+      if (newText) {
+        await updateDoc(doc(db, "messages", messageId), { text: newText });
+      }
+    }
+
+    // Simulate login based on user
+    window.addEventListener("load", () => {
+      const password = prompt("Enter your password:");
+      const users = {
+        "amaar123": "Amaar",
+        "inaya456": "Inaya",
+        "vanika789": "Vanika"
+      };
+
+      if (users[password]) {
+        localStorage.setItem("user", users[password]);
+        alert(`Welcome, ${users[password]}!`);
+      } else {
+        alert("Incorrect password. You will be logged in as a guest.");
+        localStorage.setItem("user", "Guest");
+      }
+    });
+  </script>
+</body>
+</html>

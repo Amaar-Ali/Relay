@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #e9edf0;
+    }
+
+    #login-container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    input {
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: 80%;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      background: #25d366;
+      color: #fff;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #20c056;
+    }
+  </style>
+</head>
+<body>
+  <div id="login-container">
+    <h1>WhatsApp Login</h1>
+    <input type="password" id="password" placeholder="Enter Password">
+    <button id="login-btn">Login</button>
+  </div>
+
+  <script>
+    const users = {
+      "amaar123": "Amaar",
+      "inaya456": "Inaya",
+      "vanika789": "Vanika"
+    };
+
+    const loginBtn = document.getElementById("login-btn");
+    loginBtn.addEventListener("click", () => {
+      const password = document.getElementById("password").value;
+      const username = users[password];
+
+      if (username) {
+        alert(`Welcome, ${username}!`);
+        window.location.href = "whatsapp.html";
+      } else {
+        alert("Incorrect password! Please try again.");
+      }
+    });
+  </script>
+</body>
+</html>
