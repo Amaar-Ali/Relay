@@ -3,186 +3,211 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Relay</title>
+  <title>Relay Chat</title>
   <style>
-    /* Common styles */
+    :root {
+      --dark-navy: #1C1E29;
+      --soft-steel: #8D99AE;
+      --light-silver: #F7F8FA;
+      --accent-green: #23CE6B;
+      --text-white: #ffffff;
+    }
+
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Poppins', sans-serif;
       margin: 0;
       padding: 0;
       display: flex;
       flex-direction: column;
       height: 100vh;
-      transition: background 0.3s, color 0.3s;
+      background: linear-gradient(135deg, var(--dark-navy), var(--soft-steel));
+      transition: background 0.4s, color 0.4s;
+      overflow: hidden;
     }
 
     #chat-header {
-      padding: 15px;
-      text-align: center;
+      padding: 12px 18px;
       font-size: 18px;
-      font-weight: bold;
+      font-weight: 600;
+      background: var(--dark-navy);
+      color: var(--soft-steel);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     #chat-container {
       flex: 1;
       overflow-y: auto;
-      padding: 10px;
+      padding: 10px 15px;
       display: flex;
       flex-direction: column;
+      gap: 8px;
+      background: linear-gradient(135deg, #1A1C2C, #343650);
+      scroll-behavior: smooth;
     }
 
     .message {
       max-width: 70%;
-      padding: 10px;
-      margin: 5px;
-      border-radius: 12px;
-      word-wrap: break-word;
+      padding: 12px 16px;
+      border-radius: 8px;
+      word-break: break-word;
       position: relative;
-      border: 1px solid #ccc;
-      cursor: pointer;
-      outline: none; /* Remove white outline from messages */
+      display: flex;
+      flex-direction: column;
+      background: var(--light-silver);
+      color: var(--dark-navy);
+      animation: fadeIn 0.25s ease;
     }
 
     .sent {
       align-self: flex-end;
-      background: #1f6feb;
+      background: var(--accent-green);
+      color: white;
     }
 
     .received {
       align-self: flex-start;
-      background: #30363d;
     }
 
-    .options {
-      display: none;
+    .meta {
+      font-size: 11px;
+      margin-top: 5px;
+      opacity: 0.7;
+      align-self: flex-end;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    #context-menu {
       position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background: #21262d;
-      border-radius: 8px;
-      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-      z-index: 10;
-      min-width: 100px;
+      display: none;
       flex-direction: column;
-      padding: 5px;
+      background: var(--dark-navy);
+      border-radius: 6px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+      z-index: 1000;
+      min-width: 120px;
     }
 
-    .sent .options {
-      right: 110%;
-    }
-
-    .received .options {
-      left: 110%;
-    }
-
-    .option {
-      padding: 8px;
+    #context-menu .option {
+      padding: 10px 14px;
+      color: var(--text-white);
       cursor: pointer;
-      text-align: center;
       font-size: 14px;
-      color: #ffffff;
-      border-bottom: 1px solid #444c56;
+      transition: background 0.2s;
     }
 
-    .option:hover {
-      background: #444c56;
-    }
-
-    .message:hover .options {
-      display: flex;
+    #context-menu .option:hover {
+      background: var(--accent-green);
+      color: var(--dark-navy);
     }
 
     #message-box {
       display: flex;
-      padding: 10px;
+      padding: 10px 15px;
+      background: var(--dark-navy);
+      align-items: center;
+      position: sticky;
+      bottom: 0;
+      z-index: 5;
     }
 
     #message-input {
       flex: 1;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      margin-right: 10px;
-      background-color: #21262d;
-      color: white;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 20px;
+      background: var(--light-silver);
+      color: var(--dark-navy);
+      font-size: 15px;
+      margin-right: 8px;
+      min-height: 44px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    #message-input::placeholder {
+      color: var(--soft-steel);
     }
 
     #send-btn {
-      padding: 10px 20px;
-      background: #238636;
-      color: #ffffff;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    /* Dark Mode Styles */
-    .dark-mode {
-      background: #0d1117;
-      color: #ffffff;
-    }
-
-    .dark-mode #chat-header {
-      background: #161b22;
-    }
-
-    .dark-mode .message {
-      border: 1px solid #ccc;
-    }
-
-    .dark-mode #message-input {
-      background-color: #21262d;
+      padding: 10px 18px;
+      background: var(--accent-green);
       color: white;
+      border: none;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s;
     }
 
-    .dark-mode #send-btn {
-      background: #238636;
+    #send-btn:hover {
+      background: #20b861;
     }
 
-    /* Light Mode Styles */
-    .light-mode {
-      background: #ffffff;
-      color: #ffffff; /* Keep text color black in light mode */
-    }
-
-    .light-mode #chat-header {
-        background: #161b22;
-    }
-
-    .light-mode .message {
-      border: 1px solid #ddd;
-    }
-
-    .light-mode #message-input {
-      background-color: #161b22;
-      color: rgb(255, 255, 255); /* Keep text color black in light mode */
-    }
-
-    .light-mode #send-btn {
-      background: #4CAF50;
-    }
-
-    /* Light/Dark Mode Toggle Text Style */
     #mode-toggle {
       cursor: pointer;
-      font-size: 20px;
-      color: inherit;
+      font-size: 22px;
     }
 
+    #typing-indicator {
+      padding: 5px 18px;
+      font-size: 12px;
+      color: var(--soft-steel);
+      font-style: italic;
+      height: 18px;
+    }
+
+    .light-mode {
+      background: var(--light-silver);
+      color: var(--dark-navy);
+    }
+
+    .light-mode #chat-header,
+    .light-mode #message-box {
+      background: var(--soft-steel);
+      color: var(--dark-navy);
+    }
+
+    .light-mode .message.received {
+      background: #e0e5ec;
+      color: var(--dark-navy);
+    }
+
+    .light-mode .sent {
+      background: var(--accent-green);
+      color: white;
+    }
   </style>
 </head>
 <body class="dark-mode">
+
   <div id="chat-header">
-    <div>Relay - Group Chat</div>
-    <div id="mode-toggle">🌙</div> <!-- Mode Toggle in Header -->
+    <div>Relay - chat - AIV</div>
+    <div id="mode-toggle">🌙</div>
   </div>
+
+  <div id="typing-indicator"></div>
   <div id="chat-container"></div>
+
+  <div id="context-menu">
+    <div class="option edit">✏️ Edit</div>
+    <div class="option delete">🗑️ Delete</div>
+    <div class="option reply">💬 Reply</div>
+  </div>
+
   <div id="message-box">
-    <input type="text" id="message-input" placeholder="Type a message...">
-    <button id="send-btn">Send</button>
+    <textarea id="message-input" placeholder="Type a message..."></textarea>
+    <button id="send-btn">➤</button>
   </div>
 
   <script type="module">
@@ -205,7 +230,11 @@
     const messageInput = document.getElementById("message-input");
     const sendBtn = document.getElementById("send-btn");
     const modeToggle = document.getElementById("mode-toggle");
+    const typingIndicator = document.getElementById("typing-indicator");
+    const contextMenu = document.getElementById("context-menu");
 
+    let typingTimer;
+    let replyToText = null;
     const user = localStorage.getItem("user") || prompt("Enter your name:") || "Unknown";
     localStorage.setItem("user", user);
 
@@ -213,87 +242,137 @@
     const q = query(messagesRef, orderBy("timestamp", "asc"));
 
     onSnapshot(q, (snapshot) => {
-      chatContainer.innerHTML = "";
-      snapshot.forEach((doc) => {
-        renderMessage(doc.id, doc.data());
+      snapshot.docChanges().forEach((change) => {
+        const data = change.doc.data();
+        const id = change.doc.id;
+
+        if (change.type === "added") {
+          renderMessage(id, data, true);
+        } else if (change.type === "modified") {
+          updateMessage(id, data);
+        } else if (change.type === "removed") {
+          removeMessage(id);
+        }
       });
     });
 
-    function renderMessage(id, message) {
+    function renderMessage(id, message, scroll = false) {
       const messageElement = document.createElement("div");
       messageElement.classList.add("message", message.sender === user ? "sent" : "received");
       messageElement.setAttribute("data-id", id);
 
+      const editedTag = message.edited ? " <span class='meta'>(edited)</span>" : "";
+      const metaTime = message.timestamp?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || "";
+      const replyPrefix = message.replyTo ? `<div class='meta'>Replying to: ${message.replyTo}</div>` : "";
+
       messageElement.innerHTML = `
+        ${replyPrefix}
         <div><strong>${message.sender}</strong></div>
-        <div>${message.text}</div>
-        <div class="options">
-          <div class="option edit">Edit</div>
-          <div class="option delete">Delete</div>
-          <div class="option reply">Reply</div>
-        </div>
+        <div>${message.text}${editedTag}</div>
+        <div class="meta">${metaTime}</div>
       `;
 
-      chatContainer.appendChild(messageElement);
-      chatContainer.scrollTop = chatContainer.scrollHeight;
+      messageElement.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        showContextMenu(e, id, message.text);
+      });
 
-      messageElement.querySelector(".edit").addEventListener("click", () => editMessage(id, message.text));
-      messageElement.querySelector(".delete").addEventListener("click", () => deleteMessage(id));
-      messageElement.querySelector(".reply").addEventListener("click", () => replyMessage(message.text));
+      chatContainer.appendChild(messageElement);
+      if (scroll) chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
-    sendBtn.addEventListener("click", async () => {
-      const text = messageInput.value.trim();
-      if (text) {
-        const messageData = {
-          sender: user,
-          text,
-          timestamp: serverTimestamp()
-        };
+    function updateMessage(id, message) {
+      const messageElement = chatContainer.querySelector(`[data-id="${id}"]`);
+      if (messageElement) {
+        const editedTag = message.edited ? " <span class='meta'>(edited)</span>" : "";
+        const metaTime = message.timestamp?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || "";
+        const replyPrefix = message.replyTo ? `<div class='meta'>Replying to: ${message.replyTo}</div>` : "";
 
-        messageInput.value = "";
-
-        try {
-          await addDoc(messagesRef, messageData);
-        } catch (error) {
-          console.error("Error sending message:", error);
-        }
+        messageElement.innerHTML = `
+          ${replyPrefix}
+          <div><strong>${message.sender}</strong></div>
+          <div>${message.text}${editedTag}</div>
+          <div class="meta">${metaTime}</div>
+        `;
       }
-    });
+    }
 
-    async function editMessage(id, oldText) {
+    function removeMessage(id) {
+      const messageElement = chatContainer.querySelector(`[data-id="${id}"]`);
+      if (messageElement) {
+        chatContainer.removeChild(messageElement);
+      }
+    }
+
+    function showContextMenu(e, id, text) {
+      contextMenu.style.top = e.clientY + "px";
+      contextMenu.style.left = e.clientX + "px";
+      contextMenu.style.display = "flex";
+
+      contextMenu.querySelector(".edit").onclick = () => { editMessage(id, text); hideContextMenu(); };
+      contextMenu.querySelector(".delete").onclick = () => { deleteMessage(id); hideContextMenu(); };
+      contextMenu.querySelector(".reply").onclick = () => { replyMessage(text); hideContextMenu(); };
+    }
+
+    function hideContextMenu() {
+      contextMenu.style.display = "none";
+    }
+
+    window.addEventListener("click", hideContextMenu);
+
+    function sendMessage() {
+      const text = messageInput.value.trim();
+      if (!text) return;
+      addDoc(messagesRef, {
+        sender: user,
+        text,
+        timestamp: serverTimestamp(),
+        replyTo: replyToText,
+        edited: false
+      });
+      messageInput.value = "";
+      replyToText = null;
+      typingIndicator.innerText = "";
+    }
+
+    function editMessage(id, oldText) {
       const newText = prompt("Edit your message:", oldText);
       if (newText && newText !== oldText) {
-        const messageDoc = doc(db, "messages", id);
-        await updateDoc(messageDoc, { text: newText });
+        updateDoc(doc(db, "messages", id), { text: newText, edited: true });
       }
     }
 
-    async function deleteMessage(id) {
-      if (confirm("Are you sure you want to delete this message?")) {
-        const messageDoc = doc(db, "messages", id);
-        await deleteDoc(messageDoc);
+    function deleteMessage(id) {
+      if (confirm("Delete this message?")) {
+        deleteDoc(doc(db, "messages", id));
       }
     }
 
     function replyMessage(text) {
-      messageInput.value = `(replying to: ${text}\n)` + messageInput.value;
+      replyToText = text;
       messageInput.focus();
     }
 
-    // Toggle Dark/Light Mode
-    modeToggle.addEventListener("click", () => {
-      const currentMode = document.body.classList.contains("dark-mode") ? "dark" : "light";
-      if (currentMode === "dark") {
-        document.body.classList.remove("dark-mode");
-        document.body.classList.add("light-mode");
-        modeToggle.innerText = "🌞"; // Sun icon for Light Mode
-      } else {
-        document.body.classList.remove("light-mode");
-        document.body.classList.add("dark-mode");
-        modeToggle.innerText = "🌙"; // Moon icon for Dark Mode
+    function showTyping() {
+      typingIndicator.innerText = `${user} is typing...`;
+      clearTimeout(typingTimer);
+      typingTimer = setTimeout(() => typingIndicator.innerText = "", 2000);
+    }
+
+    messageInput.addEventListener("input", showTyping);
+    messageInput.addEventListener("keypress", (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
       }
     });
+    sendBtn.addEventListener("click", sendMessage);
+
+    modeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("light-mode");
+      modeToggle.innerText = document.body.classList.contains("light-mode") ? "🌞" : "🌙";
+    });
   </script>
+
 </body>
 </html>
