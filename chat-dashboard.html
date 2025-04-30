@@ -126,7 +126,6 @@
       z-index: 1;
     }
 
-    /* Animations */
     @keyframes fadeIn {
       from { opacity: 0; transform: scale(0.95); }
       to { opacity: 1; transform: scale(1); }
@@ -172,13 +171,42 @@
     <h1>RELAY</h1>
     <h2>Select a chat</h2>
     <div class="card-container">
-      <a href="user1.html"><div class="chat-card">User 1</div></a>
+      <a href="amaar-inaya.html"><div class="chat-card" id="user1-card">User 1</div></a>
       <a href="group-chat.html"><div class="chat-card">Group Chat</div></a>
-      <a href="user2.html"><div class="chat-card">User 2</div></a>
+      <a href="amaat-vanika.html"><div class="chat-card" id="user2-card">User 2</div></a>
     </div>
   </div>
 
   <footer>© 2025 Amaar Ali. All rights reserved.</footer>
 
+  <script>
+    const loggedInUser = localStorage.getItem("user");
+  
+    if (!loggedInUser) {
+      window.location.href = "index.html"; // Redirect to login if not set
+    }
+  
+    const contactMap = {
+      "Amaar": ["Inaya", "Vanika"],
+      "Inaya": ["Amaar", "Vanika"],
+      "Vanika": ["Amaar", "Inaya"],
+      "Mumma": ["Amaar", "Dad"],
+      "Dad": ["Amaar", "Mumma"]
+    };
+  
+    const user1 = document.getElementById("user1-card");
+    const user2 = document.getElementById("user2-card");
+    const groupCard = document.getElementById("group-chat-card");
+  
+    const [c1, c2] = contactMap[loggedInUser] || ["User 1", "User 2"];
+  
+    user1.innerText = c1;
+    user2.innerText = c2;
+  
+    if (loggedInUser === "Mumma" || loggedInUser === "Dad") {
+      groupCard?.remove(); // Remove group chat card
+    }
+  </script>
+  
 </body>
 </html>
